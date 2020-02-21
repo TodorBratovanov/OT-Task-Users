@@ -20,10 +20,12 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping
-    public ResponseEntity<List<UserDTO>> getUsers() {
-        List<UserDTO> users = userService.findAll();
-        return ResponseEntity.ok(users);
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUsers(@PathVariable("id") Long id) {
+        return userService
+                .findUser(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -48,14 +50,14 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "/searchBy", params = "prefix")
-    public ResponseEntity<List<UserDTO>> searchByPrefix(@RequestParam("prefix") String prefix) {
+    @GetMapping(value = "/prefix/{prefix}")
+    public ResponseEntity<List<UserDTO>> searchByPrefix(@PathVariable("prefix") String prefix) {
         List<UserDTO> byNamePrefix = userService.findByNamePrefix(prefix);
         return ResponseEntity.ok(byNamePrefix);
     }
 
-    @GetMapping(value = "/searchBy", params = "email")
-    public ResponseEntity<List<UserDTO>> searchByEmail(@RequestParam("email") @Pattern(regexp = EMAIL_PATTERN) String email) {
+    @GetMapping(value = "/email/{email}")
+    public ResponseEntity<List<UserDTO>> searchByEmail(@PathVariable("email") @Pattern(regexp = EMAIL_PATTERN) String email) {
         List<UserDTO> byEmail = userService.findByEmail(email);
         return ResponseEntity.ok(byEmail);
     }
