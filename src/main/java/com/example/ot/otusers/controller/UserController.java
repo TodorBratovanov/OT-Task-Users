@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.List;
@@ -21,7 +22,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUsers(@PathVariable("id") Long id) {
+    public ResponseEntity<UserDTO> getUser(@PathVariable("id") Long id) {
         return userService
                 .findUser(id)
                 .map(ResponseEntity::ok)
@@ -51,8 +52,9 @@ public class UserController {
     }
 
     @GetMapping(value = "/prefix/{prefix}")
-    public ResponseEntity<List<UserDTO>> searchByPrefix(@PathVariable("prefix") String prefix) {
-        List<UserDTO> byNamePrefix = userService.findByNamePrefix(prefix);
+    public ResponseEntity<List<UserDTO>> searchByPrefix(@RequestParam(defaultValue = "0") @Min(0) Integer page,
+                                                        @PathVariable("prefix") String prefix) {
+        List<UserDTO> byNamePrefix = userService.findByNamePrefix(page, prefix);
         return ResponseEntity.ok(byNamePrefix);
     }
 
