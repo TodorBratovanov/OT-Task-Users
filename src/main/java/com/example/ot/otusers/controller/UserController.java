@@ -1,11 +1,16 @@
 package com.example.ot.otusers.controller;
 
+import com.example.ot.otusers.model.RdfFormat;
 import com.example.ot.otusers.model.UserDTO;
+import com.example.ot.otusers.service.RdfService;
 import com.example.ot.otusers.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -18,8 +23,10 @@ import java.util.List;
 public class UserController {
 
     public static final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+    private static final String DEFAULT_FILE_NAME = "all-users";
 
     private final UserService userService;
+    private final RdfService rdfService;
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable("id") Long id) {
@@ -62,6 +69,17 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> searchByEmail(@PathVariable("email") @Pattern(regexp = EMAIL_PATTERN) String email) {
         List<UserDTO> byEmail = userService.findByEmail(email);
         return ResponseEntity.ok(byEmail);
+    }
+
+    @GetMapping("/download/rdf")
+    public StreamingResponseBody downloadRdfCustom(HttpServletResponse response,
+                                                   @RequestParam(defaultValue = DEFAULT_FILE_NAME) String fileName,
+                                                   @RequestParam RdfFormat format) {
+        response.setContentType(format.getMediaType());
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileName + format.getFileExtension());
+
+        List<UserDTO> allUsers = userService.findAll();
+        return outputStream -> rdfService.generateRdf(allUsers, outputStream, format);
     }
 
 }

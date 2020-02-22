@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,13 @@ public class UserService {
     private final UserRepository userRepository;
 
     private static final int PAGE_SIZE = 50;
+
+    public List<UserDTO> findAll() {
+        return StreamSupport
+                .stream(userRepository.findAll().spliterator(), false)
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 
     public Optional<UserDTO> findUser(long userId) {
         return userRepository.findById(userId).map(this::toDto);
