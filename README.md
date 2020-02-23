@@ -11,9 +11,23 @@
 
 ### Run RabbitMQ container via docker
 
-We need a RabbitMQ broker available to connect to. Run docker container:
+We need a RabbitMQ broker available to connect to.
+
+Add to Dockerfile:
+
+```
+FROM rabbitmq
+ 
+RUN rabbitmq-plugins enable --offline rabbitmq_management
+ 
+EXPOSE 15671 15672
+```
+ 
+Download RabbitMQ management image:
 
 `docker pull rabbitmq:3-management`
+
+Run docker container:
 
 `docker run -d -p 5672:5672 -p 15672:15672 --name my-rabbit rabbitmq:3-management`
 
