@@ -28,7 +28,6 @@ public class UserController {
     private static final String DEFAULT_FILE_NAME = "all-users";
 
     private final UserService userService;
-    private final RdfService rdfService;
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable("id") Long id) {
@@ -89,15 +88,14 @@ public class UserController {
     }
 
     @GetMapping("/download/rdf")
-    public StreamingResponseBody downloadRdfCustom(HttpServletResponse response,
-                                                   @RequestParam(defaultValue = DEFAULT_FILE_NAME) String fileName,
-                                                   @RequestParam RdfFormat format) {
+    public StreamingResponseBody downloadRdf(HttpServletResponse response,
+                                             @RequestParam(defaultValue = DEFAULT_FILE_NAME) String fileName,
+                                             @RequestParam RdfFormat format) {
         response.setContentType(format.getMediaType());
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + fileName + format.getFileExtension());
 
-        List<UserDTO> allUsers = userService.findAll();
-        log.info("Start downloading RDF file for {} users", allUsers.size());
-        return outputStream -> rdfService.generateRdf(allUsers, outputStream, format);
+        log.info("Start downloading RDF file for all users");
+        return outputStream -> userService.exportAll(outputStream, format);
     }
 
     private ResponseEntity<UserDTO> notFound(String criteria, Object id) {

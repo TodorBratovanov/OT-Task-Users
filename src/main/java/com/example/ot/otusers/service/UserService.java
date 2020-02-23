@@ -3,12 +3,16 @@ package com.example.ot.otusers.service;
 import com.example.ot.otusers.db.entity.QUser;
 import com.example.ot.otusers.db.entity.User;
 import com.example.ot.otusers.db.repository.UserRepository;
+import com.example.ot.otusers.model.RdfFormat;
 import com.example.ot.otusers.model.UserDTO;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,15 +22,18 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final RdfService rdfService;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
     private static final int PAGE_SIZE = 50;
 
-    public List<UserDTO> findAll() {
-        return StreamSupport
-                .stream(userRepository.findAll().spliterator(), false)
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public void exportAll(OutputStream outputStream, RdfFormat format) {
+        userRepository.getAll().forEach(user -> {
+            rdfService.generateRdf(toDto(user), outputStream, format);
+            entityManager.detach(user);
+        });
     }
 
     public Optional<UserDTO> findUser(long userId) {
