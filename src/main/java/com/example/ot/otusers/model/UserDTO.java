@@ -9,12 +9,14 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import java.io.Serializable;
+
 import static com.example.ot.otusers.controller.UserController.EMAIL_PATTERN;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class UserDTO implements Serializable {
 
     @JsonProperty("id")
     private Long id;

@@ -43,15 +43,20 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<UserDTO> findByEmail(String email) {
-        return userRepository
-                .findByEmail(email).stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public Optional<UserDTO> findByEmail(String email) {
+        return userRepository.findByEmail(email).map(this::toDto);
     }
 
     public UserDTO create(UserDTO userDTO) {
         return toDto(userRepository.save(toEntity(userDTO)));
+    }
+
+    public List<UserDTO> create(List<UserDTO> users) {
+        List<User> entities = users.stream().map(this::toEntity).collect(Collectors.toList());
+        return StreamSupport
+                .stream(userRepository.saveAll(entities).spliterator(), false)
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     public Optional<UserDTO> update(long userId, UserDTO userDTO) {
